@@ -1,0 +1,19 @@
+<package>
+  <description brief="pal_camera_client">
+
+     pal_camera_client provides a simple way to get on demand image and intrinsic parameters from a ROS camera publisher.
+
+  </description>
+  <author>Jordi Pages</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pal_camera_client</url>
+  <depend package="pal_camera"/>
+  <depend package="pal_camera_publisher"/>
+  <depend package="sensor_msgs"/>
+  <depend package="cv_bridge"/>
+  <depend package="opencv2"/>
+
+</package>
+
+
