@@ -53,10 +53,10 @@
 
 namespace pal {
 
-/// @cond DOXYGEN_IGNORE
-class CameraClientImpl {
+  /// @cond DOXYGEN_IGNORE
+  class CameraClientImpl {
 
-public:
+  public:
 
     CameraClientImpl(const std::string& imgTopic,
                      CameraClient::transport trans,
@@ -68,23 +68,11 @@ public:
 
     bool isThereAnyPublisher() const;
 
-    void updateCameraInfo();
+    void getCameraInfo(sensor_msgs::CameraInfo& camInfo);
 
-    void getCameraInfo(sensor_msgs::CameraInfo& camInfo) const;
+    void getImage(cv::Mat& img);
 
-    void updateImage();
-
-    void getImage(cv::Mat& img) const;
-
-    int getImageWidth() const;
-    int getImageHeight() const;
-    double getFx() const;
-    double getFy() const;
-    double getCx() const;
-    double getCy() const;
-    void getDistortion(std::vector<double>& distortion) const;
-
-protected:
+  protected:
 
     void imageCallback(const sensor_msgs::ImageConstPtr& imgMsg);
     void cameraInfoCallback(const sensor_msgs::CameraInfoConstPtr& msg);
@@ -94,15 +82,13 @@ protected:
     CameraClient::transport _transport;
     double _timeoutSec;
     std::string _camInfoTopic;
-    bool _camInfoAvailable;
-    bool _imageAvailable;
     float _maxRate;
 
-    cv::Mat _image, _updatedImage;
-    long _imageCounter, _updatedImageId;
+    cv::Mat _image;
+    long _imageCounter, _lastGetImageId;
 
     sensor_msgs::CameraInfo _camInfo, _updatedCamInfo;
-    long _cameraInfoCounter, _updatedCameraInfoId;
+    long _cameraInfoCounter, _lastGetCameraInfoId;
 
     ros::NodeHandle _node;
     ros::CallbackQueue _cbQueue;
@@ -113,278 +99,166 @@ protected:
 
     boost::shared_ptr< boost::thread > _spinThread;
     boost::mutex _guardImage, _guardCameraInfo;
-};
 
-CameraClientImpl::CameraClientImpl(const std::string& imgTopic,
-                                   CameraClient::transport trans,
-                                   double timeout,
-                                   float maxRate,
-                                   const std::string& camInfoTopic):
+    bool _spinRunning, _shutDown;
+  };
+
+  CameraClientImpl::CameraClientImpl(const std::string& imgTopic,
+                                     CameraClient::transport trans,
+                                     double timeout,
+                                     float maxRate,
+                                     const std::string& camInfoTopic):
     _imgTopic(imgTopic),
     _transport(trans),
     _timeoutSec(timeout),
     _camInfoTopic(camInfoTopic),
-    _camInfoAvailable(false),
-    _imageAvailable(false),
     _maxRate(maxRate),
     _imageCounter(0),
-    _updatedImageId(0),
+    _lastGetImageId(0),
     _cameraInfoCounter(0),
-    _updatedCameraInfoId(0),
-    _node(ros::NodeHandle())
-{
+    _lastGetCameraInfoId(0),
+    _node(ros::NodeHandle()),
+    _spinRunning(false),
+    _shutDown(false)
+  {
     _node.setCallbackQueue(&_cbQueue);
     _imageTransport.reset( new image_transport::ImageTransport( _node ) );
     std::string transportStr;
 
     if ( trans == CameraClient::RAW )
-        transportStr = "raw";
+      transportStr = "raw";
     else if ( trans == CameraClient::JPEG )
-        transportStr = "compressed";
+      transportStr = "compressed";
 
     image_transport::TransportHints transportHint(transportStr);
 
     if ( _camInfoTopic != "" )
-        _camInfoSub = _node.subscribe(_camInfoTopic, 1, &CameraClientImpl::cameraInfoCallback, this);
+      _camInfoSub = _node.subscribe(_camInfoTopic, 1, &CameraClientImpl::cameraInfoCallback, this);
 
     _imageSub = _imageTransport->subscribe(_imgTopic, 1, &CameraClientImpl::imageCallback, this, transportHint);
 
     _spinThread.reset( new boost::thread( boost::bind(&CameraClientImpl::spin, this) ) );
-}
+  }
 
-CameraClientImpl::~CameraClientImpl()
-{    
+  CameraClientImpl::~CameraClientImpl()
+  {
+    _shutDown = true;
+
+    ros::Time start = ros::Time::now();
+
+    while ( _spinRunning && ros::ok() && (ros::Time::now() - start).toSec() < 5 )
+      ros::Duration(0.1).sleep();
+
+    if ( _spinRunning )
+      ROS_ERROR("Error in CameraClientImpl::~CameraClientImpl: not possible to stop spin thread");
+
     if ( _camInfoTopic != "" )
-        _camInfoSub.shutdown();
+      _camInfoSub.shutdown();
 
     _imageSub.shutdown();
-}
+  }
 
-void CameraClientImpl::spin()
-{
+  void CameraClientImpl::spin()
+  {
     ros::WallDuration period( static_cast<double>(1.0/_maxRate) );
     ros::Rate rate(static_cast<double>(_maxRate));
-    while ( ros::ok() )
+    _spinRunning = true;
+    while ( ros::ok() && !_shutDown )
     {
-        _cbQueue.callAvailable( period );
-        rate.sleep();
+      _cbQueue.callAvailable( period );
+      rate.sleep();
     }
-}
-
-void CameraClientImpl::imageCallback(const sensor_msgs::ImageConstPtr& imgMsg)
-{
-  cv_bridge::CvImagePtr cvImgPtr;
-
-  cvImgPtr = cv_bridge::toCvCopy(imgMsg, imgMsg->encoding);
-
-  {
-    boost::mutex::scoped_lock lock(_guardImage);
-    _image = cvImgPtr->image.clone();
-    ++_imageCounter;
+    _spinRunning = false;
   }
-}
 
-void CameraClientImpl::cameraInfoCallback(const sensor_msgs::CameraInfoConstPtr& msg)
-{
+  void CameraClientImpl::imageCallback(const sensor_msgs::ImageConstPtr& imgMsg)
+  {
+    cv_bridge::CvImagePtr cvImgPtr;
+
+    cvImgPtr = cv_bridge::toCvCopy(imgMsg, imgMsg->encoding);
+
+    {
+      boost::mutex::scoped_lock lock(_guardImage);
+      _image = cvImgPtr->image.clone();
+      ++_imageCounter;
+    }
+  }
+
+  void CameraClientImpl::cameraInfoCallback(const sensor_msgs::CameraInfoConstPtr& msg)
+  {
     boost::mutex::scoped_lock lock(_guardCameraInfo);
     _camInfo = *msg;
     ++_cameraInfoCounter;
-}
+  }
 
-bool CameraClientImpl::isThereAnyPublisher() const
-{
+  bool CameraClientImpl::isThereAnyPublisher() const
+  {
     return _imageSub.getNumPublishers() > 0;
-}
+  }
 
-void CameraClientImpl::updateCameraInfo()
-{
+  void CameraClientImpl::getCameraInfo(sensor_msgs::CameraInfo& camInfo)
+  {
     ros::Time start = ros::Time::now();
-    while ( _imageCounter == _updatedImageId && ros::ok() )
+    while ( _cameraInfoCounter == _lastGetCameraInfoId && ros::ok() )
     {
-        if ( (ros::Time::now() - start).toSec() > _timeoutSec )
-            throw std::runtime_error("Error in CameraClientImpl::updateImage: timeout occurred");
+      if ( (ros::Time::now() - start).toSec() > _timeoutSec )
+        throw std::runtime_error("Error in CameraClientImpl::getCameraInfo: timeout occurred");
     }
 
     {
-        boost::mutex::scoped_lock lock(_guardCameraInfo);
-        _updatedCamInfo      = _camInfo;
-        _updatedCameraInfoId = _cameraInfoCounter;
+      boost::mutex::scoped_lock lock(_guardCameraInfo);
+      camInfo              = _camInfo;
+      _lastGetCameraInfoId = _cameraInfoCounter;
     }
+  }
 
-    _camInfoAvailable = true;
-}
-
-void CameraClientImpl::getCameraInfo(sensor_msgs::CameraInfo& camInfo) const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getCameraInfo: CameraInfo not available. Call first updateCameraInfo()");
-
-    camInfo = _updatedCamInfo;
-}
-
-void CameraClientImpl::updateImage()
-{
+  void CameraClientImpl::getImage(cv::Mat& img)
+  {
     ros::Time start = ros::Time::now();
-    while ( _imageCounter == _updatedImageId && ros::ok() )
+    while ( _imageCounter == _lastGetImageId && ros::ok() )
     {
-        if ( (ros::Time::now() - start).toSec() > _timeoutSec )
-            throw std::runtime_error("Error in CameraClientImpl::updateImage: timeout occurred");
+      if ( (ros::Time::now() - start).toSec() > _timeoutSec )
+        throw std::runtime_error("Error in CameraClientImpl::getImage: timeout occurred");
     }
 
     {
-        boost::mutex::scoped_lock lock(_guardImage);
-        _updatedImage = _image.clone();
-        _updatedImageId = _imageCounter;
+      boost::mutex::scoped_lock lock(_guardImage);
+      img             = _image.clone();
+      _lastGetImageId = _imageCounter;
     }
-
-    _imageAvailable = true;
-}
-
-void CameraClientImpl::getImage(cv::Mat& img) const
-{
-    if ( !_imageAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getImage: no image available. First call CameraClient::updateImage()");
-
-    img = _updatedImage.clone();
-}
-
-int CameraClientImpl::getImageWidth() const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getImageWidth: CameraInfo not available. Call first updateCameraInfo()");
-
-    return _camInfo.width;
-}
-
-int CameraClientImpl::getImageHeight() const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getImageHeight: CameraInfo not available. Call first updateCameraInfo()");
-
-    return _camInfo.height;
-}
-
-double CameraClientImpl::getFx() const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getFx: CameraInfo not available. Call first updateCameraInfo()");
-
-    return _camInfo.K[0];
-}
-
-double CameraClientImpl::getFy() const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getFy: CameraInfo not available. Call first updateCameraInfo()");
-
-    return _camInfo.K[4];
-}
-
-double CameraClientImpl::getCx() const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getCx: CameraInfo not available. Call first updateCameraInfo()");
-
-    return _camInfo.K[2];
-}
-
-double CameraClientImpl::getCy() const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getCy: CameraInfo not available. Call first updateCameraInfo()");
-
-    return _camInfo.K[5];
-}
-
-void CameraClientImpl::getDistortion(std::vector<double>& distortion) const
-{
-    if ( !_camInfoAvailable )
-        throw std::runtime_error("Error in CameraClientImpl::getDistortion: CameraInfo not available. Call first updateCameraInfo()");
-
-    distortion = _camInfo.D;
-}
-/// @endcond
+  }
+  /// @endcond
 
 
-//////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
 
-CameraClient::CameraClient(const std::string& imgTopic,
-                           CameraClient::transport trans,
-                           double timeout,
-                           float maxRate,
-                           const std::string& camInfoTopic)
-{
+  CameraClient::CameraClient(const std::string& imgTopic,
+                             CameraClient::transport trans,
+                             double timeout,
+                             float maxRate,
+                             const std::string& camInfoTopic)
+  {
     _impl.reset(new CameraClientImpl(imgTopic, trans, timeout, maxRate, camInfoTopic));
-}
+  }
 
-CameraClient::~CameraClient()
-{
+  CameraClient::~CameraClient()
+  {
     _impl.reset();
-}
+  }
 
-bool CameraClient::isThereAnyPublisher() const
-{
+  bool CameraClient::isThereAnyPublisher() const
+  {
     return _impl->isThereAnyPublisher();
-}
+  }
 
-
-void CameraClient::updateCameraInfo()
-{
-    _impl->updateCameraInfo();
-}
-
-void CameraClient::getCameraInfo(sensor_msgs::CameraInfo& camInfo) const
-{
+  void CameraClient::getCameraInfo(sensor_msgs::CameraInfo& camInfo) const
+  {
     _impl->getCameraInfo(camInfo);
-}
+  }
 
-
-void CameraClient::updateImage()
-{
-    _impl->updateImage();
-}
-
-
-void CameraClient::getImage(cv::Mat& img) const
-{
+  void CameraClient::getImage(cv::Mat& img) const
+  {
     _impl->getImage(img);
-}
+  }
 
-
-int CameraClient::getImageWidth() const
-{
-    return _impl->getImageWidth();
-}
-
-int CameraClient::getImageHeight() const
-{
-    return _impl->getImageHeight();
-}
-
-double CameraClient::getFx() const
-{
-    return _impl->getFx();
-}
-
-double CameraClient::getFy() const
-{
-    return _impl->getFy();
-}
-
-double CameraClient::getCx() const
-{
-    return _impl->getCx();
-}
-
-double CameraClient::getCy() const
-{
-    return _impl->getCy();
-}
-
-void CameraClient::getDistortion(std::vector<double>& distortion) const
-{    
-    _impl->getDistortion(distortion);
-}
-
-}
-
+} //pal

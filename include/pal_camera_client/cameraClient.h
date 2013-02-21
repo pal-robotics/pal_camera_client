@@ -46,14 +46,14 @@
 #include <vector>
 
 namespace cv {
-class Mat;
+  class Mat;
 }
 
 namespace pal {
 
-class CameraClientImpl;
+  class CameraClientImpl;
 
-/**
+  /**
  * @class CameraClient cameraClient.h "pal_camera_client/CameraClient.h"
  * @author Jordi Pages
  *
@@ -62,23 +62,26 @@ class CameraClientImpl;
  * The class uses a ROS camera subscriber with the required callbacks running in a separate thread. Then, functions are provided to
  * get the latest image and intrinsic parameters using mutual exclusion with the callback functions.
  */
-class CameraClient {
+  class CameraClient {
 
-public:        
+  public:
 
     /**
      * @enum transport
-     * @brief The image transports supported
+     * @brief The image transports supported                   \n
+     *                                                         \n
+     *   RAW: subscribe to uncompressed image topic            \n
+     *   JPEG: subscribe to image topic using jpeg compression \n
      */
     enum transport { RAW = 0, JPEG = 1 };
 
-    /**      
+    /**
      * @brief CameraClient constructor
      * @param[in] imgTopic name of the ROS topic where the image is published
      * @param[in] trans type of image transport. See CameraClient::transport
      * @param[in] timeout timeout in seconds when calling CameraClient::updateImage and CameraClient::updateCameraInfo
      * @param[in] maxRate max rate at which this client must have to provide images in Hz.
-     * @param[in] camInfoTopic name of the ROS topic where the sensor_msgs::CameraInfo, i.e. intrinsic parameters, of the camera
+     * @param[in] camInfoTopic name of the ROS topic with the sensor_msgs::CameraInfo, i.e. intrinsic parameters, of the camera
      */
     CameraClient(const std::string& imgTopic,
                  transport trans = RAW,
@@ -98,89 +101,26 @@ public:
     bool isThereAnyPublisher() const;
 
     /**
-     * @brief updateCameraInfo commands to keep an internal copy of the latest sensors_msgs::CameraInfo obtained by the corresponding ROS
-     *                         subscriber callback function
-     * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient occurs
-     */
-    void updateCameraInfo();
-
-    /**
-     * @brief getCameraInfo get the sensor_msgs::CameraInfo kept by the latest call to CameraClient::updateCameraInfo
-     * @param[out] camInfo
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
+     * @brief getCameraInfo get the latest sensor_msgs::CameraInfo obtained by the corresponding inner ROS subscriber callback function.
+     * @param[out] camInfo intrinsic parameters of the camera
+     * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient constructor occurs
      */
     void getCameraInfo(sensor_msgs::CameraInfo& camInfo) const;
 
     /**
-     * @brief updateImage commands to keep an internal copy of the latest image obtained by the corresponding ROS subscriber callback function
-     * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient occurs
-     */
-    void updateImage();    
-
-    /**
-     * @brief getImage get the image kept by the last call to CameraClient::updateImage
+     * @brief getImage get the latest image obtained by the inner ROS subscriber callback function
      * @param[out] img OpenCV image
-     * @throws std::runtime_error if CameraClient::updateImage has never been called
+     * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient constructor occurs
      */
     void getImage(cv::Mat& img) const;
 
-    /**
-     * @brief getImageWidth
-     * @return the image width in pixels
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    int getImageWidth() const;
-
-    /**
-     * @brief getImageHeight
-     * @return the image height in pixels
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    int getImageHeight() const;
-
-    /**
-     * @brief getFx
-     * @return the horizontal focal distance of the camera in pixels
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    double getFx() const;
-
-    /**
-     * @brief getFy
-     * @return the vertical focal distance of the camera in pixels
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    double getFy() const;
-
-    /**
-     * @brief getCx
-     * @return the horizontal position of the optical center in pixels
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    double getCx() const;
-
-    /**
-     * @brief getCy
-     * @return the vertical position of the optical center in pixels
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    double getCy() const;
-
-    /**
-     * @brief getDistortion get the distortion coefficients of the camera being \f$k1,k2,p1,p2,k3,[k4,k5,k6]\f$
-     *                      where \f$k_i\f$ are radial distortion coefficients and \f$p_j\f$ are tangential distortion coefficients
-     * @param[out] distortion the distortion coefficents.
-     * @throws std::runtime_error if CameraClient::updateCameraInfo has never been called
-     */
-    void getDistortion(std::vector<double>& distortion) const;
-
-private:
+  private:
 
     /**
      * @brief _impl class implementation
      */
     boost::shared_ptr<CameraClientImpl> _impl;
-};
+  };
 
 } //pal
 
