@@ -2,6 +2,7 @@
   <description brief="pal_camera_client">
 
      pal_camera_client provides a simple way to get on demand image and intrinsic parameters from a ROS camera publisher.
+     It works for both monocular and stereo cameras.
 
   </description>
   <author>Jordi Pages</author>
@@ -13,6 +14,10 @@
   <depend package="sensor_msgs"/>
   <depend package="cv_bridge"/>
   <depend package="opencv2"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lpal_camera_client -lpal_camera -lpal_camera_publisher"/>
+  </export>
 
 </package>
 
