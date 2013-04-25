@@ -72,8 +72,24 @@ TEST(camera_client, test_camera_client)
 
   ros::Rate rate(maxRate);
   ros::Time start = ros::Time::now();
-  while ( ros::ok() && (ros::Time::now() - start).toSec() < testDurationInSec )
+  double elapsed = 0;
+  bool paused = false;
+  while ( ros::ok() && elapsed < testDurationInSec )
   {
+    if ( !paused && elapsed > testDurationInSec/4 && elapsed < testDurationInSec/2 )
+    {
+      ROS_INFO("Pausing camera ...");
+      camClient.pause();
+      paused = true;
+    }
+
+    if ( paused && elapsed > testDurationInSec/2 )
+    {
+      ROS_INFO("Unpausing camera ...");
+      camClient.unpause();
+      paused = false;
+    }
+
     camClient.getImage(img);
 
     camClient.getCameraInfo(camInfo);
@@ -95,7 +111,11 @@ TEST(camera_client, test_camera_client)
     cv::waitKey(15);
 
     rate.sleep();
+
+    elapsed = (ros::Time::now() - start).toSec();
   }
+
+
 }
 
 // Run all the tests that were declared with TEST()

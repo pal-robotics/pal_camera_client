@@ -72,13 +72,19 @@ namespace pal {
 
     void getImage(cv::Mat& img);
 
+    void pause();
+
+    void unpause();
+
   protected:
 
+    void createSubscribers();
+    void shutdownSubscribers();
     void imageCallback(const sensor_msgs::ImageConstPtr& imgMsg);
     void cameraInfoCallback(const sensor_msgs::CameraInfoConstPtr& msg);
     void spin();
 
-    std::string _imgTopic;
+    std::string _imgTopic;    
     CameraClient::transport _transport;
     double _timeoutSec;
     std::string _camInfoTopic;
@@ -122,20 +128,9 @@ namespace pal {
     _shutDown(false)
   {
     _node.setCallbackQueue(&_cbQueue);
-    _imageTransport.reset( new image_transport::ImageTransport( _node ) );
-    std::string transportStr;
+    _imageTransport.reset( new image_transport::ImageTransport( _node ) );    
 
-    if ( trans == CameraClient::RAW )
-      transportStr = "raw";
-    else if ( trans == CameraClient::JPEG )
-      transportStr = "compressed";
-
-    image_transport::TransportHints transportHint(transportStr);
-
-    if ( _camInfoTopic != "" )
-      _camInfoSub = _node.subscribe(_camInfoTopic, 1, &CameraClientImpl::cameraInfoCallback, this);
-
-    _imageSub = _imageTransport->subscribe(_imgTopic, 1, &CameraClientImpl::imageCallback, this, transportHint);
+    createSubscribers();
 
     _spinThread.reset( new boost::thread( boost::bind(&CameraClientImpl::spin, this) ) );
   }
@@ -152,10 +147,63 @@ namespace pal {
     if ( _spinRunning )
       ROS_ERROR("Error in CameraClientImpl::~CameraClientImpl: not possible to stop spin thread");
 
+    shutdownSubscribers();
+  }
+
+  void CameraClientImpl::createSubscribers()
+  {
+    if ( _camInfoTopic != "" )
+      _camInfoSub = _node.subscribe(_camInfoTopic, 1, &CameraClientImpl::cameraInfoCallback, this);
+
+    std::string transportStr;
+
+    if ( _transport == CameraClient::RAW )
+      transportStr = "raw";
+    else if ( _transport == CameraClient::JPEG )
+      transportStr = "compressed";
+
+    image_transport::TransportHints transportHint(transportStr);
+
+    _imageSub = _imageTransport->subscribe(_imgTopic, 1, &CameraClientImpl::imageCallback, this, transportHint);
+  }
+
+  void CameraClientImpl::shutdownSubscribers()
+  {
     if ( _camInfoTopic != "" )
       _camInfoSub.shutdown();
 
     _imageSub.shutdown();
+  }
+
+  void CameraClientImpl::pause()
+  {
+    if ( _spinThread.get() == NULL )
+      return;
+
+    _shutDown = true;
+
+    ros::Time start = ros::Time::now();
+
+    while ( _spinRunning && ros::ok() && (ros::Time::now() - start).toSec() < 5 )
+      ros::Duration(0.1).sleep();
+
+    if ( _spinRunning )
+      throw std::runtime_error("Error in CameraClientImpl::pause: not possible to stop spin thread");
+
+    _shutDown = false;
+
+    shutdownSubscribers();
+
+    _spinThread.reset();
+  }
+
+  void CameraClientImpl::unpause()
+  {    
+    if ( _spinThread.get() == NULL ) //camera client paused
+    {
+      createSubscribers();
+      _spinThread.reset( new boost::thread( boost::bind(&CameraClientImpl::spin, this) ) );
+    }
   }
 
   void CameraClientImpl::spin()
@@ -198,6 +246,12 @@ namespace pal {
 
   void CameraClientImpl::getCameraInfo(sensor_msgs::CameraInfo& camInfo)
   {
+    if ( _spinThread.get() == NULL ) //camera client paused
+    {
+      camInfo = _camInfo;
+      return;
+    }
+
     ros::Time start = ros::Time::now();
     while ( _cameraInfoCounter == _lastGetCameraInfoId && ros::ok() )
     {
@@ -214,6 +268,12 @@ namespace pal {
 
   void CameraClientImpl::getImage(cv::Mat& img)
   {
+    if ( _spinThread.get() == NULL ) //camera client paused
+    {
+      img = _image.clone();
+      return;
+    }
+
     ros::Time start = ros::Time::now();
     while ( _imageCounter == _lastGetImageId && ros::ok() )
     {
@@ -259,6 +319,16 @@ namespace pal {
   void CameraClient::getImage(cv::Mat& img) const
   {
     _impl->getImage(img);
+  }
+
+  void CameraClient::pause()
+  {
+    _impl->pause();
+  }
+
+  void CameraClient::unpause()
+  {
+    _impl->unpause();
   }
 
 } //pal

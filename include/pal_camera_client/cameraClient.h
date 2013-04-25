@@ -32,8 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _PAL_CAMERA_CLIENT_H_
-#define _PAL_CAMERA_CLIENT_H_
+#ifndef _ROS_PAL_CAMERA_CLIENT_H_
+#define _ROS_PAL_CAMERA_CLIENT_H_
 
 //ROS headers
 #include <sensor_msgs/CameraInfo.h>
@@ -113,6 +113,18 @@ namespace pal {
      * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient constructor occurs
      */
     void getImage(cv::Mat& img) const;
+
+    /**
+     * @brief pause pauses the internal thread checking for callbacks. Image and calibration data won't be refreshed
+     *              during the time the camera client is paused.
+     */
+    void pause();
+
+    /**
+     * @brief unpause unpause in case it was paused.
+     * @throws std::runtime_error if the spinning thread cannot be stopped
+     */
+    void unpause();
 
   private:
 
