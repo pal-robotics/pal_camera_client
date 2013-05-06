@@ -126,6 +126,9 @@ namespace pal {
      */
     void unpause();
 
+
+    bool isPaused() const;
+
   private:
 
     /**
