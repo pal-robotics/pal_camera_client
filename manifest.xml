@@ -9,14 +9,13 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pal_camera_client</url>
-  <depend package="pal_camera"/>
-  <depend package="pal_camera_publisher"/>
+  <depend package="image_transport"/>
   <depend package="sensor_msgs"/>
   <depend package="cv_bridge"/>
   <depend package="opencv2"/>
 
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lpal_camera_client -lpal_camera -lpal_camera_publisher"/>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lpal_camera_client"/>
   </export>
 
 </package>
