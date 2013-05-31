@@ -14,17 +14,13 @@ rosbuild_init()
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-rosbuild_add_library(${PROJECT_NAME} src/cameraClient.cpp src/stereoCameraClient.cpp src/utils.cpp)
+#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_gtest(single_camera_client_test pal_test/single_camera_client_test.cpp TIMEOUT 40.0)
-target_link_libraries(single_camera_client_test camera_dummy ${PROJECT_NAME})
+target_link_libraries(single_camera_client_test camera_dummy pal_camera_client)
 
 rosbuild_add_gtest(stereo_camera_client_test pal_test/stereo_camera_client_test.cpp TIMEOUT 40.0)
-target_link_libraries(stereo_camera_client_test camera_dummy ${PROJECT_NAME})
-
-rosbuild_link_boost(${PROJECT_NAME} thread)
+target_link_libraries(stereo_camera_client_test camera_dummy pal_camera_client)
 
 #uncomment if you have defined messages
 #rosbuild_genmsg()
