@@ -36,7 +36,7 @@
 #define _ROS_PAL_CAMERA_CLIENT_H_
 
 //ROS headers
-#include <sensor_msgs/CameraInfo.h>
+#include <ros/message_forward.h>
 
 //Boost headers
 #include <boost/shared_ptr.hpp>
@@ -44,6 +44,10 @@
 //STL headers
 #include <string>
 #include <vector>
+
+namespace sensor_msgs {
+  ROS_DECLARE_MESSAGE(CameraInfo);
+}
 
 namespace cv {
   class Mat;

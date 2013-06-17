@@ -36,11 +36,14 @@
 #define _PAL_CAMERA_CLIENT_UTILS_H_
 
 //ROS headers
-#include <sensor_msgs/CameraInfo.h>
+#include <ros/message_forward.h>
 
 //STL headers
 #include <vector>
 
+namespace sensor_msgs {
+  ROS_DECLARE_MESSAGE(CameraInfo);
+}
 
 namespace pal {
 

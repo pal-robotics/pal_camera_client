@@ -38,6 +38,7 @@
 
 //ROS headers
 #include <ros/ros.h>
+#include <sensor_msgs/CameraInfo.h>
 #include <ros/callback_queue.h>
 #include <ros/subscriber.h>
 #include <image_transport/image_transport.h>
