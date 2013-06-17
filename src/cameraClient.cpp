@@ -74,6 +74,8 @@ namespace pal {
 
     void getImage(cv::Mat& img);
 
+    void getImage(cv::Mat& img, ros::Time& timeStamp);
+
     void pause();
 
     void unpause();
@@ -95,6 +97,7 @@ namespace pal {
     float _maxRate;
 
     cv::Mat _image;
+    ros::Time _imageTimeStamp;
     long _imageCounter, _lastGetImageId;
 
     sensor_msgs::CameraInfo _camInfo, _updatedCamInfo;
@@ -257,7 +260,8 @@ namespace pal {
         _image = cvImgPtr->image.clone();
       }
       else*/
-        cvImgPtr->image.copyTo(_image);
+      cvImgPtr->image.copyTo(_image);
+      _imageTimeStamp = imgMsg->header.stamp;
       ++_imageCounter;
     }
   }
@@ -319,6 +323,12 @@ namespace pal {
       _lastGetImageId = _imageCounter;
     }
   }
+
+  void CameraClientImpl::getImage(cv::Mat& img, ros::Time& timeStamp)
+  {
+    getImage(img);
+    timeStamp = _imageTimeStamp;
+  }
   /// @endcond
 
 
@@ -351,6 +361,11 @@ namespace pal {
   void CameraClient::getImage(cv::Mat& img) const
   {
     _impl->getImage(img);
+  }
+
+  void CameraClient::getImage(cv::Mat& img, ros::Time& timeStamp) const
+  {
+    _impl->getImage(img, timeStamp);
   }
 
   void CameraClient::pause()

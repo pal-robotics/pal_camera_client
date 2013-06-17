@@ -49,6 +49,10 @@ namespace sensor_msgs {
   ROS_DECLARE_MESSAGE(CameraInfo);
 }
 
+namespace ros {
+  class Time;
+}
+
 namespace cv {
   class Mat;
 }
@@ -117,6 +121,14 @@ namespace pal {
      * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient constructor occurs
      */
     void getImage(cv::Mat& img) const;
+
+    /**
+     * @brief getImage get the latest image obtained by the inner ROS subscriber callback function
+     * @param[out] img OpenCV image
+     * @param[out] timeStamp time stamp at which the image was published
+     * @throws std::runtime_error if the timeout specified in CameraClient::CameraClient constructor occurs
+     */
+    void getImage(cv::Mat& img, ros::Time& timeStamp) const;
 
     /**
      * @brief pause pauses the internal thread checking for callbacks. Image and calibration data won't be refreshed
