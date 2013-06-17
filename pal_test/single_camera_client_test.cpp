@@ -46,6 +46,7 @@
 // ROS headers
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <sensor_msgs/CameraInfo.h>
 
 // Boost headers
 #include <boost/thread.hpp>
