@@ -36,6 +36,9 @@
 //PAL headers
 #include <pal_camera_client/utils.h>
 
+//ROS headers
+#include <sensor_msgs/CameraInfo.h>
+
 namespace pal {
 
   namespace cameraInfo {
