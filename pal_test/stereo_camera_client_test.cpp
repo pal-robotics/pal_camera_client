@@ -37,6 +37,7 @@
 #include <pal_camera_client/utils.h>
 #include <pal_camera_publisher/camera_dummy.h>
 #include <pal_camera_publisher/cameraPublisher.h>
+#include <pal_core/util/string.h>
 
 // OpenCV headers
 #include <opencv2/core/core.hpp>
@@ -45,6 +46,7 @@
 // ROS headers
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <sensor_msgs/CameraInfo.h>
 
 // Boost headers
 #include <boost/thread.hpp>
@@ -52,6 +54,7 @@
 // Gtest headers
 #include <gtest/gtest.h>
 
+bool isInteractive;
 
 TEST(stereo_camera_client, test_stereo_camera_client)
 {    
@@ -90,9 +93,12 @@ TEST(stereo_camera_client, test_stereo_camera_client)
     EXPECT_FLOAT_EQ( pal::cameraInfo::getDistortion(camInfoR)[3], -0.01090); //p2
     EXPECT_FLOAT_EQ( pal::cameraInfo::getDistortion(camInfoR)[4],  0.00038); //k3
 
-    cv::imshow("image left",  imgL);
-    cv::imshow("image right", imgR);
-    cv::waitKey(15);
+    if ( isInteractive )
+    {
+      cv::imshow("image left",  imgL);
+      cv::imshow("image right", imgR);
+      cv::waitKey(15);
+    }
 
     rate.sleep();
   }
@@ -103,6 +109,10 @@ int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "utest");
+
+  isInteractive = argc > 1 && pal::util::string::equalIgnoreCase(argv[1], "interactive");
+
+  std::cout<< std::endl << std::endl << "NUMBER OF ARGS: " << argc << std::endl << std::endl;
 
   ros::NodeHandle nh;
 
