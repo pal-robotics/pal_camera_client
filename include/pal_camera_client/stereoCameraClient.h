@@ -108,7 +108,7 @@ namespace pal {
                        const std::string& imgTopicR,
                        transport trans = RAW,
                        synchronization sync = APPROX_TIME,
-                       double timeout = 0.5,
+                       double timeout = 5,
                        float maxRate = 10,
                        const std::string& camInfoTopicL = "",
                        const std::string& camInfoTopicR = "");
