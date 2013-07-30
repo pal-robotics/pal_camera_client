@@ -65,7 +65,7 @@ TEST(stereo_camera_client, test_stereo_camera_client)
                                     "/camera_dummy_to_test_client/right/image",
                                     pal::StereoCameraClient::JPEG,
                                     pal::StereoCameraClient::EXACT_TIME,
-                                    0.5,
+                                    10, //allow larget time-out in case the test is run with valgrind
                                     static_cast<float>(maxRate*2), //the CameraClient will check callbacks at this rate
                                     "/camera_dummy_to_test_client/left/camera_info",
                                     "/camera_dummy_to_test_client/right/camera_info");
