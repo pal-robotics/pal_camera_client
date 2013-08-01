@@ -304,7 +304,8 @@ namespace pal {
   {
     if ( _spinThread.get() == NULL ) //camera client paused
     {
-      img = _image; //.clone();
+      img = _image.clone(); //clone is mandatory. Otherwise user gets only a referenc ef the image
+                            //that is constantly being updated by the internal thread
       return;
     }
 
@@ -319,7 +320,8 @@ namespace pal {
 
     {
       boost::mutex::scoped_lock lock(_guardImage);
-      img             = _image; //.clone();
+      img             = _image.clone(); //clone is mandatory. Otherwise user gets only a referenc ef the image
+                                        //that is constantly being updated by the internal thread
       _lastGetImageId = _imageCounter;
     }
   }
