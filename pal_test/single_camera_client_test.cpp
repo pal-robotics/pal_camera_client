@@ -147,7 +147,8 @@ int main(int argc, char **argv)
 
   std::string path = ros::package::getPath("pal_camera_publisher") + "/pal_test/";
 
-  camPub.addCamera(camera, path);
+  camera.setCalibrationFilePath(path);
+  camPub.addCamera(camera);
 
   camPub.setRate(25);
   camPub.start(false); //non blocking publisher
