@@ -287,10 +287,12 @@ namespace pal {
     }
 
     ros::Time start = ros::Time::now();
+    ros::Duration snooze(0.010);
     while ( _cameraInfoCounter == _lastGetCameraInfoId && ros::ok() )
     {
       if ( (ros::Time::now() - start).toSec() > _timeoutSec )
         throw std::runtime_error("Error in CameraClientImpl::getCameraInfo: timeout occurred");
+      snooze.sleep();
     }
 
     {
