@@ -13,12 +13,9 @@
   <depend package="sensor_msgs"/>
   <depend package="cv_bridge"/>
   <depend package="opencv2"/>
-
   <export>
     <rosdoc config="rosdoc.yaml" />
     <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lpal_camera_client"/>
+    <rosdoc config="${prefix}/rosdoc.yaml"/>
   </export>
-
 </package>
-
-
