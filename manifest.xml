@@ -12,8 +12,4 @@
   <depend package="pal_camera_publisher"/>
   <depend package="pal_core"/>
   <depend package="opencv2"/>
-
-
 </package>
-
-
