@@ -287,10 +287,12 @@ namespace pal {
     }
 
     ros::Time start = ros::Time::now();
+    ros::Duration snooze(0.010);
     while ( _cameraInfoCounter == _lastGetCameraInfoId && ros::ok() )
     {
       if ( (ros::Time::now() - start).toSec() > _timeoutSec )
         throw std::runtime_error("Error in CameraClientImpl::getCameraInfo: timeout occurred");
+      snooze.sleep();
     }
 
     {
@@ -304,7 +306,8 @@ namespace pal {
   {
     if ( _spinThread.get() == NULL ) //camera client paused
     {
-      img = _image; //.clone();
+      img = _image.clone(); //clone is mandatory. Otherwise user gets only a referenc ef the image
+                            //that is constantly being updated by the internal thread
       return;
     }
 
@@ -319,7 +322,8 @@ namespace pal {
 
     {
       boost::mutex::scoped_lock lock(_guardImage);
-      img             = _image; //.clone();
+      img             = _image.clone(); //clone is mandatory. Otherwise user gets only a referenc ef the image
+                                        //that is constantly being updated by the internal thread
       _lastGetImageId = _imageCounter;
     }
   }
