@@ -65,7 +65,7 @@ TEST(stereo_camera_client, test_stereo_camera_client)
                                     "/camera_dummy_to_test_client/right/image",
                                     pal::StereoCameraClient::JPEG,
                                     pal::StereoCameraClient::EXACT_TIME,
-                                    0.5,
+                                    10, //allow larget time-out in case the test is run with valgrind
                                     static_cast<float>(maxRate*2), //the CameraClient will check callbacks at this rate
                                     "/camera_dummy_to_test_client/left/camera_info",
                                     "/camera_dummy_to_test_client/right/camera_info");
@@ -121,20 +121,24 @@ int main(int argc, char **argv)
   pal::dummy::Camera camera[2];
 
   camera[0].setImageSize(640, 480);
-  camera[0].setNameSpace("/camera_dummy_to_test_client");
-  camera[0].setImageTopic("left/image");
+  camera[0].setNameSpace("/camera_dummy_to_test_client/left");
+  camera[0].setImageTopic("image");
   camera[0].setDummyImage( ros::package::getPath("pal_camera_publisher") + "/etc/pal_logo_left.jpg");
 
   camera[1].setImageSize(640, 480);
-  camera[1].setNameSpace("/camera_dummy_to_test_client");
-  camera[1].setImageTopic("right/image");
+  camera[1].setNameSpace("/camera_dummy_to_test_client/right");
+  camera[1].setImageTopic("image");
   camera[1].setDummyImage( ros::package::getPath("pal_camera_publisher") + "/etc/pal_logo_right.jpg");
 
   pal::CameraPublisher camPub;
 
   std::string path = ros::package::getPath("pal_camera_publisher") + "/pal_test/";
-  camPub.addCamera(camera[0], path);
-  camPub.addCamera(camera[1], path);
+
+  camera[0].setCalibrationFilePath(path);
+  camera[1].setCalibrationFilePath(path);
+
+  camPub.addCamera(camera[0]);
+  camPub.addCamera(camera[1]);
 
   camPub.setRate(25);
   camPub.start(false); //non-blocking publisher

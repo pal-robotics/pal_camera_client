@@ -8,12 +8,8 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pal_camera_client_test</url>
-  <depend package="pal_core"/>
   <depend package="pal_camera_client"/>
   <depend package="pal_camera_publisher"/>
+  <depend package="pal_core"/>
   <depend package="opencv2"/>
-
-
 </package>
-
-

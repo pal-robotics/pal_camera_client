@@ -64,7 +64,7 @@ TEST(camera_client, test_camera_client)
 
   pal::CameraClient camClient("/camera_dummy_to_test_client/image",
                               pal::CameraClient::RAW,
-                              0.5,
+                              10, //allow larget time-out in case the test is run with valgrind
                               static_cast<float>(maxRate*2), //the CameraClient will check callbacks at this rate
                               "/camera_dummy_to_test_client/camera_info");
 
@@ -147,7 +147,8 @@ int main(int argc, char **argv)
 
   std::string path = ros::package::getPath("pal_camera_publisher") + "/pal_test/";
 
-  camPub.addCamera(camera, path);
+  camera.setCalibrationFilePath(path);
+  camPub.addCamera(camera);
 
   camPub.setRate(25);
   camPub.start(false); //non blocking publisher
