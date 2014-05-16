@@ -123,12 +123,12 @@ int main(int argc, char **argv)
   camera[0].setImageSize(640, 480);
   camera[0].setNameSpace("/camera_dummy_to_test_client/left");
   camera[0].setImageTopic("image");
-  camera[0].setDummyImage( ros::package::getPath("pal_camera_publisher") + "/etc/pal_logo_left.jpg");
+  camera[0].setDummyImage( ros::package::getPath("pal_camera_publisher") + "/etc/pal_camera_publisher/pal_logo_left.jpg");
 
   camera[1].setImageSize(640, 480);
   camera[1].setNameSpace("/camera_dummy_to_test_client/right");
   camera[1].setImageTopic("image");
-  camera[1].setDummyImage( ros::package::getPath("pal_camera_publisher") + "/etc/pal_logo_right.jpg");
+  camera[1].setDummyImage( ros::package::getPath("pal_camera_publisher") + "/etc/pal_camera_publisher/pal_logo_right.jpg");
 
   pal::CameraPublisher camPub;
 
