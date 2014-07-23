@@ -42,6 +42,7 @@
 #include <ros/callback_queue.h>
 #include <ros/subscriber.h>
 #include <image_transport/image_transport.h>
+#include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
 
 //Boost headers
@@ -76,6 +77,8 @@ namespace pal {
 
     void getImage(cv::Mat& img, ros::Time& timeStamp);
 
+    std::string getImageEncoding() const;
+
     void pause();
 
     void unpause();
@@ -97,6 +100,7 @@ namespace pal {
     float _maxRate;
 
     cv::Mat _image;
+    std::string _imageEncoding;
     ros::Time _imageTimeStamp;
     long _imageCounter, _lastGetImageId;
 
@@ -226,9 +230,6 @@ namespace pal {
     ros::Rate rate(static_cast<double>(_maxRate));
     _spinRunning = true;
 
-    //ROS_ERROR("***************** spin %fs", _maxRate);
-    //ROS_ERROR("***************** loops %ld", count);
-    //ROS_ERROR("***************** imageCallbackCount %ld", imageCallbackCount);
     while ( ros::ok() && !_shutDown )
     {
       count++;
@@ -237,29 +238,18 @@ namespace pal {
       _cbQueue.callOne( period );
       rate.sleep();
     }
-    //ROS_ERROR("***************** loops %ld", count);
-    //ROS_ERROR("***************** imageCallbackCount %ld", imageCallbackCount);
     _spinRunning = false;
   }
 
   void CameraClientImpl::imageCallback(const sensor_msgs::ImageConstPtr& imgMsg)
   {
+    _imageEncoding = imgMsg->encoding;
     imageCallbackCount++;
     cv_bridge::CvImageConstPtr cvImgPtr;
     cvImgPtr = cv_bridge::toCvShare(imgMsg);
-    //cv_bridge::CvImagePtr cvImgPtr;
-    //cvImgPtr = cv_bridge::toCvCopy(imgMsg, imgMsg->encoding);
 
     {
       boost::mutex::scoped_lock lock(_guardImage);
-      //@bugdo we ned to call clone?
-      /*static bool firstTime = true;
-      if (firstTime)
-      {
-        firstTime = false;
-        _image = cvImgPtr->image.clone();
-      }
-      else*/
       cvImgPtr->image.copyTo(_image);
       _imageTimeStamp = imgMsg->header.stamp;
       ++_imageCounter;
@@ -333,6 +323,12 @@ namespace pal {
     getImage(img);
     timeStamp = _imageTimeStamp;
   }
+
+  std::string CameraClientImpl::getImageEncoding() const
+  {
+    return _imageEncoding;
+  }
+
   /// @endcond
 
 
@@ -370,6 +366,11 @@ namespace pal {
   void CameraClient::getImage(cv::Mat& img, ros::Time& timeStamp) const
   {
     _impl->getImage(img, timeStamp);
+  }
+
+  std::string CameraClient::getImageEncoding() const
+  {
+    return _impl->getImageEncoding();
   }
 
   void CameraClient::pause()

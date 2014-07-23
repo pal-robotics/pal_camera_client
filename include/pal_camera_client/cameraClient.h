@@ -131,6 +131,12 @@ namespace pal {
     void getImage(cv::Mat& img, ros::Time& timeStamp) const;
 
     /**
+     * @brief getImageEncoding get the image encoding as defined in sensor_msgs/image_encodings.h
+     * @return
+     */
+    std::string getImageEncoding() const;
+
+    /**
      * @brief pause pauses the internal thread checking for callbacks. Image and calibration data won't be refreshed
      *              during the time the camera client is paused.
      */

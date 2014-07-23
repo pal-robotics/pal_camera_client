@@ -156,6 +156,12 @@ namespace pal {
      */
     void getImage(stereoEye eye, cv::Mat& img) const;
 
+    /**
+     * @brief getImageEncoding get the image encoding as defined in sensor_msgs/image_encodings.h
+     * @return
+     */
+    std::string getImageEncoding() const;
+
   private:
 
     /**

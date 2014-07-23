@@ -85,6 +85,8 @@ namespace pal {
     void getImages(cv::Mat& imgL, cv::Mat& imgR);
     void getImage(StereoCameraClient::stereoEye eye, cv::Mat& img);
 
+    std::string getImageEncoding() const;
+
   protected:
 
     void stereoCallback(const sensor_msgs::ImageConstPtr& msgImgL,
@@ -104,6 +106,7 @@ namespace pal {
     float _maxRate;
 
     cv::Mat _imageL, _imageR;
+    std::string _imageEncoding;
     sensor_msgs::CameraInfo _camInfoL, _camInfoR;
     long _dataCounter, _lastGetData;
 
@@ -231,6 +234,8 @@ namespace pal {
                                               const sensor_msgs::CameraInfoConstPtr& camInfoL,
                                               const sensor_msgs::CameraInfoConstPtr& camInfoR)
   {
+    _imageEncoding = msgImgL->encoding;
+
     cv_bridge::CvImagePtr cvImgPtrL, cvImgPtrR;
 
     cvImgPtrL = cv_bridge::toCvCopy(msgImgL, msgImgL->encoding);
@@ -308,6 +313,11 @@ namespace pal {
       throw std::runtime_error("Error in StereoCameraClientImpl::getImage: unsupported eye parameter");
   }
 
+  std::string StereoCameraClientImpl::getImageEncoding() const
+  {
+    return _imageEncoding;
+  }
+
   /// @endcond
 
 
@@ -357,6 +367,11 @@ namespace pal {
   void StereoCameraClient::getImage(StereoCameraClient::stereoEye eye, cv::Mat& img) const
   {
     _impl->getImage(eye, img);
+  }
+
+  std::string StereoCameraClient::getImageEncoding() const
+  {
+    return _impl->getImageEncoding();
   }
 
 }
