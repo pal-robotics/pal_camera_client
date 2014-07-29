@@ -1,33 +1,79 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(pal_camera_client)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS
+  pal_camera_publisher
+  pal_core
+  pal_cmake
+  cv_bridge
+  image_transport
+  sensor_msgs  
+)
 
-rosbuild_init()
+pal_package()
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+##########
+# Flags ##
+##########
 
-rosbuild_add_library(${PROJECT_NAME} src/cameraClient.cpp src/stereoCameraClient.cpp src/utils.cpp)
-rosbuild_link_boost(${PROJECT_NAME} thread)
+pal_package(MODULE VISION)
+add_definitions(-DPAL_LIBRARY_NAME="${PROJECT_NAME}")
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+## System dependencies are found with CMake's conventions
+find_package(Boost REQUIRED COMPONENTS thread)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES pal_camera_client
+  CATKIN_DEPENDS cv_bridge image_transport sensor_msgs
+  DEPENDS Boost
+)
+
+###########
+## Build ##
+###########
+
+include_directories(
+  include  
+  ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+)
+
+add_library(pal_camera_client
+            src/cameraClient.cpp src/stereoCameraClient.cpp src/utils.cpp
+)
+target_link_libraries(pal_camera_client ${Boost_LIBRARIES}
+                                        ${catkin_LIBRARIES})
+
+#############
+## Install ##
+#############
+
+install(TARGETS pal_camera_client
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+## Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.h"
+)
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+catkin_add_gtest(${PROJECT_NAME}_single_camera-test test/single_camera_client_test.cpp)
+if(TARGET ${PROJECT_NAME}_single_camera-test)
+  target_link_libraries(${PROJECT_NAME}_single_camera-test ${PROJECT_NAME})
+endif()
+
+catkin_add_gtest(${PROJECT_NAME}_stereo_camera-test test/stereo_camera_client_test.cpp)
+if(TARGET ${PROJECT_NAME}_stereo_camera-test)
+  target_link_libraries(${PROJECT_NAME}_stereo_camera-test ${PROJECT_NAME})
+endif()
+
