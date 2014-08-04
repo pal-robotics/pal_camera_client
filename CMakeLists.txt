@@ -10,14 +10,11 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs  
 )
 
-pal_package()
-
 ##########
 # Flags ##
 ##########
 
-pal_package(MODULE VISION)
-add_definitions(-DPAL_LIBRARY_NAME="${PROJECT_NAME}")
+pal_package(MODULE vision)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS thread)
