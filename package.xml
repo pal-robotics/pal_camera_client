@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>pal_camera_client</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <description>A simple way to get on demand image and intrinsic parameters from a ROS camera publisher.
                It works for both monocular and stereo cameras.</description>
 
