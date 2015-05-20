@@ -63,14 +63,16 @@ install(DIRECTORY include/${PROJECT_NAME}/
 ## Testing ##
 #############
 
-## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}_single_camera-test test/single_camera_client_test.cpp)
-if(TARGET ${PROJECT_NAME}_single_camera-test)
-  target_link_libraries(${PROJECT_NAME}_single_camera-test ${PROJECT_NAME})
-endif()
+if(CATKIN_ENABLE_TESTING)
+  ## Add gtest based cpp test target and link libraries
+  catkin_add_gtest(${PROJECT_NAME}_single_camera-test test/single_camera_client_test.cpp)
+  if(TARGET ${PROJECT_NAME}_single_camera-test)
+    target_link_libraries(${PROJECT_NAME}_single_camera-test ${PROJECT_NAME})
+  endif()
 
-catkin_add_gtest(${PROJECT_NAME}_stereo_camera-test test/stereo_camera_client_test.cpp)
-if(TARGET ${PROJECT_NAME}_stereo_camera-test)
-  target_link_libraries(${PROJECT_NAME}_stereo_camera-test ${PROJECT_NAME})
+  catkin_add_gtest(${PROJECT_NAME}_stereo_camera-test test/stereo_camera_client_test.cpp)
+  if(TARGET ${PROJECT_NAME}_stereo_camera-test)
+    target_link_libraries(${PROJECT_NAME}_stereo_camera-test ${PROJECT_NAME})
+  endif()
 endif()
 
