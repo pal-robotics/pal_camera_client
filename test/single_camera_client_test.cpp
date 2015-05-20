@@ -37,7 +37,6 @@
 #include <pal_camera_client/utils.h>
 #include <pal_camera_publisher/camera_dummy.h>
 #include <pal_camera_publisher/cameraPublisher.h>
-#include <pal_core/util/string.h>
 
 // OpenCV headers
 #include <opencv2/core/core.hpp>
@@ -132,7 +131,7 @@ int main(int argc, char **argv)
   testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "utest");
 
-  isInteractive = argc > 1 && pal::util::string::equalIgnoreCase(argv[1], "interactive");
+  isInteractive = argc > 1 && (strcmp(argv[1], "interactive")==0);
 
   ros::NodeHandle nh;
 
