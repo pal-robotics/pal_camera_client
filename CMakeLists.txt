@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(pal_camera_client)
 
 find_package(catkin REQUIRED COMPONENTS
-  pal_camera_publisher
-  pal_core
   pal_cmake
   cv_bridge
   image_transport
