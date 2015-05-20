@@ -1,0 +1,6 @@
+<launch>
+  <test test-name="pal_camera_client_single_camera_test"
+        pkg="pal_camera_client"
+        type="pal-camera-client-single-camera-test"/>
+</launch>
+

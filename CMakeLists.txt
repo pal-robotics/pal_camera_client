@@ -64,15 +64,16 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 
 if(CATKIN_ENABLE_TESTING)
-  ## Add gtest based cpp test target and link libraries
-  catkin_add_gtest(${PROJECT_NAME}_single_camera-test test/single_camera_client_test.cpp)
-  if(TARGET ${PROJECT_NAME}_single_camera-test)
-    target_link_libraries(${PROJECT_NAME}_single_camera-test ${PROJECT_NAME})
-  endif()
+  find_package(rostest REQUIRED)  
 
-  catkin_add_gtest(${PROJECT_NAME}_stereo_camera-test test/stereo_camera_client_test.cpp)
-  if(TARGET ${PROJECT_NAME}_stereo_camera-test)
-    target_link_libraries(${PROJECT_NAME}_stereo_camera-test ${PROJECT_NAME})
-  endif()
+  add_rostest_gtest(pal-camera-client-single-camera-test
+                    test/pal-camera-client-single-camera-test.test
+                    test/single_camera_client_test.cpp)
+  target_link_libraries(pal-camera-client-single-camera-test ${PROJECT_NAME})
+
+  add_rostest_gtest(pal-camera-client-stereo-camera-test
+                    test/pal-camera-client-stereo-camera-test.test
+                    test/stereo_camera_client_test.cpp)
+  target_link_libraries(pal-camera-client-stereo-camera-test ${PROJECT_NAME})
 endif()
 
