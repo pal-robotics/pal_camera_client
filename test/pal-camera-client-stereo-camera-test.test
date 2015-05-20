@@ -1,6 +1,0 @@
-<launch>
-  <test test-name="pal_camera_client_stereo_camera_test"
-        pkg="pal_camera_client"
-        type="pal-camera-client-stereo-camera-test"/>
-</launch>
-

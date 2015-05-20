@@ -10,18 +10,13 @@
   <license>Proprietary</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rostest</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_transport</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>pal_cmake</build_depend>
-  <run_depend>rostest</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>image_transport</run_depend>
   <run_depend>sensor_msgs</run_depend>
-
-  <build_depend>pal_camera_publisher</build_depend>
-  <run_depend>pal_camera_publisher</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml" />
