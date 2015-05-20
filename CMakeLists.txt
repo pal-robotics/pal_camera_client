@@ -3,6 +3,7 @@ project(pal_camera_client)
 
 find_package(catkin REQUIRED COMPONENTS
   pal_cmake
+  pal_camera_publisher
   cv_bridge
   image_transport
   sensor_msgs  
@@ -63,20 +64,17 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)  
-  find_package(catkin REQUIRED COMPONENTS pal_camera_publisher) 
 
   add_rostest_gtest(pal-camera-client-single-camera-test
                     test/pal-camera-client-single-camera-test.test
                     test/single_camera_client_test.cpp)
   target_link_libraries(pal-camera-client-single-camera-test 
-                        ${PROJECT_NAME}
-                        ${catkin_LIBRARIES})
+                        ${PROJECT_NAME})
 
   add_rostest_gtest(pal-camera-client-stereo-camera-test
                     test/pal-camera-client-stereo-camera-test.test
                     test/stereo_camera_client_test.cpp)
   target_link_libraries(pal-camera-client-stereo-camera-test 
-                        ${PROJECT_NAME}
-                        ${catkin_LIBRARIES})
+                        ${PROJECT_NAME})
 endif()
 

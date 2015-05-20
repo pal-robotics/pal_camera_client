@@ -20,7 +20,8 @@
   <run_depend>image_transport</run_depend>
   <run_depend>sensor_msgs</run_depend>
 
-  <test_depend>pal_camera_publisher</test_depend>
+  <build_depend>pal_camera_publisher</build_depend>
+  <run_depend>pal_camera_publisher</run_depend>
 
   <export>
     <rosdoc config="rosdoc.yaml" />
