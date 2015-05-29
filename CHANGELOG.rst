@@ -2,8 +2,8 @@
 Changelog for package pal_camera_client
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2015-05-29)
+------------------
 * remove test from the package so that pal_camera_publisher and pal_core are no longer required
 * Contributors: Jordi Pages
 
