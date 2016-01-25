@@ -2,17 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(pal_camera_client)
 
 find_package(catkin REQUIRED COMPONENTS
-  pal_cmake
   cv_bridge
   image_transport
   sensor_msgs  
 )
 
-##########
-# Flags ##
-##########
-
-pal_package(MODULE vision)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS thread)
