@@ -2,8 +2,8 @@
 Changelog for package pal_camera_client
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2016-01-27)
+------------------
 * Remove pal_cmake
 * Contributors: Sam Pfeiffer
 
