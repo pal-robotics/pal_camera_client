@@ -2,8 +2,8 @@
 Changelog for package pal_camera_client
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.1 (2020-03-22)
+------------------
 * Ferrum fixes
 * Contributors: Victor Lopez
 
